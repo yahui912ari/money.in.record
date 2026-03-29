@@ -1,1 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KANEBILITY | CLEAN_DASHED_V61</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg-bright: #000000;
+            --fg-base: #333333;
+            --fg-dim: #888888;
+            --fg-line: #cccccc;
+            --font-mono: ui-monospace, 'SF Mono', 'Roboto Mono', Menlo, Consolas, Courier, monospace;
+            --text-xs: 9px; --text-sm: 10px; --text-md: 11px;
+        }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg); color: var(--fg-base);
+            font-family: var(--font-mono); font-size: var(--text-md);
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 12px;
+        }
+
+        /* 顶部虚线 */
+        .sys-header { padding-bottom: 8px; border-bottom: 2px dashed var(--fg-bright); margin-bottom: 12px; }
+        .header-row { display: flex; justify-content: space-between; font-size: var(--text-sm); }
+        .text-bright { color: var(--fg-bright); font-weight: bold; }
+
+        .sys-main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+        /* 标题虚线 */
+        .section-title {
+            color: var(--fg-bright); font-weight: bold; display: flex; justify-content: space-between;
+            padding-bottom: 2px; border-bottom: 1px dashed var(--fg-bright); font-size: var(--text-sm);
+        }
+
+        /* 分类点击标签 */
+        .cat-tag { 
+            cursor: pointer; padding: 2px 6px; border: 1px dashed var(--fg-line); transition: 0.1s;
+            font-size: var(--text-xs);
+        }
+        .cat-tag.active { 
+            background: #000; color: #fff; border-style: solid; border-color: #000;
+        }
+
+        /* 统计网格点线 */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; border: 1px dotted var(--fg-line); padding: 6px; }
+        .stat-item { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--fg-line); padding: 2px 0; }
+        .stat-label { color: var(--fg-dim); font-size: var(--text-xs); }
+
+        /* ASCII 趋势图虚线框 */
+        .ascii-chart {
+            font-family: var(--font-mono); font-size: 8px; line-height: 1.2;
+            color: var(--fg-bright); background: #fafafa; padding: 8px; 
+            border: 1px dashed var(--fg-line); margin-top: 4px; white-space: pre;
+            min-height: 62px;
+        }
+
+        /* 列表点线 */
+        .t-row { display: grid; grid-template-columns: 5ch 1fr 4ch 8ch; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--fg-line); }
+        .t-header { color: var(--fg-bright); font-weight: bold; border-bottom: 1px dashed var(--fg-bright); }
+
+        /* 底部录入虚线 */
+        .input-dock { border-top: 2px dashed var(--fg-bright); padding-top: 10px; margin-top: 10px; }
+        .input-row { display: flex; gap: 4px; }
+        input, select { 
+            background: #fff; border: 1px dashed var(--fg-bright); color: #000; 
+            font-family: var(--font-mono); font-size: var(--text-sm); padding: 4px; outline: none; 
+        }
+        button { background: #000; color: #fff; border: 1px dashed #fff; padding: 4px 12px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="sys-header">
+        <div class="header-row">
+            <div>DOC: <span class="text-bright">AUDIT_LOG_STREAM</span></div>
+            <div>VIEW: <span id="current-view" class="text-bright">GLOBAL</span></div>
+        </div>
+        <div class="header-row">
+            <div>BAL: <span id="load-val" class="text-bright">--</span></div>
+            <div>REF: <span id="date-now" class="text-bright">--</span></div>
+        </div>
+    </div>
+
+    <div class="sys-main">
+        <div class="section">
+            <div class="section-title">SECTOR_SELECTOR // 过滤视图</div>
+            <div id="cat-stats" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span id="chart-title">GLOBAL_TRAJECTORY</span> // 趋势采样</div>
+            <div id="main-ascii-chart" class="ascii-chart"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">DESCRIPTIVE_STATS // 计算结果</div>
+            <div class="stats-grid" id="sector-stats-grid"></div>
+        </div>
+
+        <div class="section" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="section-title">TRANSACTION_STREAM</div>
+            <div style="overflow-y: auto; flex: 1; margin-top: 4px;">
+                <div class="t-row t-header"><span>TIME</span><span>LABEL</span><span>CAT</span><span style="text-align: right;">AMT</span></div>
+                <div id="log-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-dock">
+        <div class="input-row">
+            <input type="text" id="in-name" placeholder="label" style="flex: 2;">
+            <input type="number" id="in-val" placeholder="amount" style="flex: 1;">
+            <select id="in-cat">
+                <option value="食">食</option><option value="购">购</option>
+                <option value="行">行</option><option value="塚">塚</option>
+                <option value="入">入金</option>
+            </select>
+            <button onclick="commit()">EXEC</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); margin-top: 6px; color: #888;">
+            <div id="eq-val">f(x) zero_data_wait...</div>
+            <div id="clock">00:00:00</div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'kanebility_v61_final_data';
+        const BUDGET = 15000;
+        // 彻底删除 Sample 数据，初始化为空数组
+        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let activeSector = 'GLOBAL';
+
+        function getStats(vals) {
+            if (!vals.length) return { avg:0, med:0, std:0, max:0, cnt:0 };
+            const n = vals.length;
+            const avg = vals.reduce((a, b) => a + b, 0) / n;
+            const sorted = [...vals].sort((a, b) => a - b);
+            const med = n % 2 !== 0 ? sorted[Math.floor(n/2)] : (sorted[n/2-1] + sorted[n/2]) / 2;
+            const std = Math.sqrt(vals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / n);
+            return { avg, med, std, max: Math.max(...vals), cnt: n };
+        }
+
+        function drawChart(dataPoints) {
+            if (dataPoints.length < 2) return "\n   [ NO_DATA_SAMPLES_FOUND ]\n   [ SYSTEM_STANDBY ]";
+            const width = 40, height = 4;
+            let canvas = Array(height).fill(0).map(() => Array(width).fill(' '));
+            const max = Math.max(...dataPoints.map(p => p.y)), min = Math.min(...dataPoints.map(p => p.y));
+            const range = (max - min) || 1;
+            dataPoints.forEach((p, i) => {
+                const x = Math.floor((i / (dataPoints.length - 1)) * (width - 1));
+                const y = Math.floor(((p.y - min) / range) * (height - 1));
+                canvas[(height - 1) - y][x] = 'o';
+            });
+            return canvas.map(row => row.join('')).join('\n') + "\n" + "- ".repeat(width/2);
+        }
+
+        function setView(sector) {
+            activeSector = sector;
+            refresh();
+        }
+
+        function commit() {
+            const val = parseFloat(document.getElementById('in-val').value);
+            if(!val) return;
+            records.unshift({
+                time: new Date().toLocaleTimeString('zh-CN', {hour12:false, hour:'2-digit', minute:'2-digit'}),
+                name: document.getElementById('in-name').value || 'unnamed',
+                val, cat: document.getElementById('in-cat').value,
+                day: new Date().getDate(), ts: Date.now()
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            document.getElementById('in-name').value = '';
+            document.getElementById('in-val').value = '';
+            refresh();
+        }
+
+        function refresh() {
+            document.getElementById('current-view').innerText = activeSector;
+            document.getElementById('date-now').innerText = new Date().toISOString().split('T')[0];
+            
+            const spentRecs = records.filter(r => r.cat !== '入');
+            const filteredRecs = activeSector === 'GLOBAL' ? spentRecs : spentRecs.filter(r => r.cat === activeSector);
+            const vals = filteredRecs.map(r => r.val);
+
+            // 分类标签
+            const cats = ['GLOBAL', '食', '购', '行', '塚'];
+            document.getElementById('cat-stats').innerHTML = cats.map(c => {
+                const total = records.filter(r => (c==='GLOBAL'?r.cat!=='入':r.cat===c)).reduce((a,b)=>a+b.val,0);
+                return `<span class="cat-tag ${activeSector===c?'active':''}" onclick="setView('${c}')">${c}:${total.toFixed(0)}</span>`;
+            }).join('');
+
+            // 趋势图
+            let rSum = 0;
+            let trendPoints = [...filteredRecs].reverse().map(r => ({x: r.day, y: rSum += r.val}));
+            document.getElementById('chart-title').innerText = `${activeSector}_TRAJECTORY`;
+            document.getElementById('main-ascii-chart').innerText = drawChart(trendPoints);
+
+            // 统计网格
+            const s = getStats(vals);
+            document.getElementById('sector-stats-grid').innerHTML = `
+                <div class="stat-item"><span class="stat-label">AVG</span><span class="stat-val">${s.avg.toFixed(1)}</span></div>
+                <div class="stat-item"><span class="stat-label">MED</span><span class="stat-val">${s.med.toFixed(1)}</span></div>
+                <div class="stat-item"><span class="stat-label">STD</span><span class="stat-val">${s.std.toFixed(1)}</span></div>
+                <div class="stat-item"><span class="stat-label">MAX</span><span class="stat-val">${s.max.toFixed(1)}</span></div>
+            `;
+
+            // 余额与日志
+            const totalSpent = spentRecs.reduce((a,b)=>a+b.val,0);
+            const totalIn = records.filter(r=>r.cat==='入').reduce((a,b)=>a+b.val,0);
+            document.getElementById('load-val').innerText = Math.round(BUDGET + totalIn - totalSpent);
+            
+            document.getElementById('log-list').innerHTML = filteredRecs.slice(0, 15).map(r => `
+                <div class="t-row">
+                    <span style="color:var(--fg-dim)">${r.time}</span>
+                    <span style="color:var(--fg-bright)">${r.name}</span>
+                    <span style="color:var(--fg-dim)">${r.cat}</span>
+                    <span style="text-align: right; font-weight:bold;">${r.val.toFixed(0)}</span>
+                </div>
+            `).join('') || `<div style="text-align:center; padding:20px; color:#ccc; font-size:9px;">[ STREAM_EMPTY ]</div>`;
+        }
+
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+        window.onload = refresh;
+    </script>
+</body>
+</html>
