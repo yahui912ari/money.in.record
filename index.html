@@ -1,7 +1,7 @@
 <html lang="en" vid="0"><head vid="1">
     <meta charset="UTF-8" vid="2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" vid="3">
-    <title vid="4">Ume Matrix | Expedition Master v11.1</title>
+    <title vid="4">Ume Matrix | Expedition Master v11.2</title>
     <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@1,500;1,600&amp;display=swap" rel="stylesheet" vid="6">
     
@@ -29,7 +29,7 @@
             <div class="flex justify-between items-start mb-6" vid="11">
                 <div vid="12">
                     <h1 class="text-4xl font-matrix-title text-[#474a4d] leading-none mb-1" vid="13">Matrix</h1>
-                    <p class="text-[10px] font-bold text-[#474a4d]/60 tracking-[0.2em] uppercase" vid="14">Expedition Master v11.1</p>
+                    <p class="text-[10px] font-bold text-[#474a4d]/60 tracking-[0.2em] uppercase" vid="14">Expedition Master v11.2</p>
                 </div>
                 <button id="fx-display" class="px-3 py-1.5 rounded-full glass-panel text-[10px] font-mono font-semibold text-[#474a4d] btn-active" onclick="updateFX()" vid="15">Syncing FX...</button>
             </div>
@@ -142,10 +142,16 @@
         <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('checklist-modal', false)"></div>
         <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl">
             <h3 class="text-sm font-bold text-[#474a4d] uppercase mb-6 text-center">Expedition Generator</h3>
-            <input type="text" id="tour-name" placeholder="Expedition Name (e.g. 1789)" class="glass-input rounded-2xl px-4 py-3.5 text-sm mb-4">
-            <div class="flex gap-4 mb-4 items-center justify-between px-2">
-                <span class="text-xs font-bold text-[#474a4d] uppercase">Hotel/Flight Count</span>
-                <input type="number" id="tour-count" value="1" class="glass-input w-20 rounded-xl py-2 text-center font-mono">
+            <input type="text" id="tour-name" placeholder="公演名 (e.g. 1789)" class="glass-input rounded-2xl px-4 py-3.5 text-sm mb-4">
+            <div class="space-y-4 mb-6 px-1">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-[#474a4d] uppercase">Hotel/Flight Count</span>
+                    <input type="number" id="tour-count" value="1" class="glass-input w-20 rounded-xl py-2 text-center font-mono">
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-[#474a4d] uppercase">Include Event?</span>
+                    <input type="checkbox" id="tour-event" class="w-5 h-5 accent-[#a8c97f]">
+                </div>
             </div>
             <button onclick="generateTour()" class="w-full py-4 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] btn-active">Generate</button>
         </div>
@@ -155,8 +161,8 @@
         <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('wish-modal', false)"></div>
         <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl">
             <h3 class="text-sm font-bold text-[#474a4d] uppercase mb-6 text-center">New Wish</h3>
-            <input type="text" id="wish-name" placeholder="Item Name" class="glass-input rounded-2xl px-4 py-3.5 text-sm mb-4">
-            <input type="number" id="wish-target" placeholder="Price (HKD)" class="glass-input rounded-2xl px-4 py-3.5 text-sm font-mono mb-6">
+            <input type="text" id="input-wish-name" placeholder="Item Name" class="glass-input rounded-2xl px-4 py-3.5 text-sm mb-4">
+            <input type="number" id="input-wish-target" placeholder="Price (HKD)" class="glass-input rounded-2xl px-4 py-3.5 text-sm font-mono mb-6">
             <button onclick="addWish()" class="w-full py-4 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] btn-active">Add Wish</button>
         </div>
     </div>
@@ -244,8 +250,12 @@
         function generateTour() {
             const name = document.getElementById('tour-name').value;
             const count = parseInt(document.getElementById('tour-count').value);
+            const hasEvent = document.getElementById('tour-event').checked;
             if(!name) return;
+            
             db.checklist.push({ name: `${name} | Ticket`, done: false, group: name, type: 'Ticket' });
+            if(hasEvent) db.checklist.push({ name: `${name} | Event`, done: false, group: name, type: 'Event' });
+            
             for(let i=1; i<=count; i++) {
                 db.checklist.push({ name: `${name} | Hotel ${i}`, done: false, group: name, type: 'Hotel' });
                 db.checklist.push({ name: `${name} | Flight ${i}`, done: false, group: name, type: 'Flight' });
@@ -265,32 +275,32 @@
             document.getElementById('due-name').value = ''; document.getElementById('due-amt').value = ''; save();
         }
 
-        // 联动逻辑：Pay Due 时自动 Check 对应的 Checklist 项目
         function executeDue(id) {
             const idx = db.dueDates.findIndex(d => d.id === id);
             const item = db.dueDates[idx];
             if(confirm(`Pay ${item.name} (${item.type})?`)) {
-                // 1. 记账
                 db.records.unshift({ name: `[${item.type}] ${item.name}`, valHKD: item.amount, category: 'Takarazuka', viaOcto: false, fullDate: `${new Date().getMonth()+1}.${new Date().getDate()}` });
-                
-                // 2. 联动 Checklist: 寻找 group 匹配且类型匹配的项目
                 db.checklist.forEach(c => {
-                    if(c.group === item.name && c.type === item.type) {
-                        c.done = true;
-                    }
+                    if(c.group === item.name && c.type === item.type) { c.done = true; }
                 });
-
                 db.dueDates.splice(idx, 1); save();
             }
         }
 
         function addWish() {
-            const n = document.getElementById('wish-name').value, t = parseFloat(document.getElementById('wish-target').value);
-            if(n && !isNaN(t)) { 
+            const nameInput = document.getElementById('input-wish-name');
+            const targetInput = document.getElementById('input-wish-target');
+            const n = nameInput.value.trim();
+            const t = parseFloat(targetInput.value);
+
+            if(n && !isNaN(t) && t > 0) { 
                 db.wishlist.push({ name: n, target: t, saved: 0 }); 
-                document.getElementById('wish-name').value = '';
-                document.getElementById('wish-target').value = '';
-                toggleModal('wish-modal', false); save(); 
+                nameInput.value = '';
+                targetInput.value = '';
+                toggleModal('wish-modal', false); 
+                save(); 
+            } else {
+                alert("Please enter a valid Name and Amount.");
             }
         }
 
@@ -317,7 +327,7 @@
                     <span class="text-xs font-semibold ${c.done?'line-through':''}">${c.name}</span>
                     <div class="flex items-center gap-2">
                         <input type="checkbox" ${c.done?'checked':''} onchange="toggleCheck(${i})" class="w-4 h-4 accent-[#a8c97f]">
-                        <button onclick="removeCheck(${i})" class="text-[10px] text-[#474a4d]/30 px-1">×</button>
+                        <button onclick="removeCheck(${i})" class="text-[14px] text-[#474a4d]/30 px-1 leading-none">×</button>
                     </div>
                 </div>`).join('');
 
@@ -332,13 +342,13 @@
                 return `<div class="glass-card rounded-2xl p-4 relative overflow-hidden">
                     <div class="flex justify-between mb-2 text-[10px] font-bold uppercase z-10 relative"><span>${w.name}</span><span>${perc.toFixed(1)}%</span></div>
                     <div class="w-full h-1.5 bg-white/60 rounded-full overflow-hidden z-10 relative"><div class="h-full bg-[#a8c97f]" style="width:${perc}%"></div></div>
-                    <button onclick="removeWish(${i})" class="absolute top-1 right-2 text-[10px] text-[#474a4d]/20">×</button>
+                    <button onclick="removeWish(${i})" class="absolute top-1 right-2 text-[14px] text-[#474a4d]/20 leading-none">×</button>
                 </div>`;
             }).join('');
         }
 
         window.toggleCheck = (i) => { db.checklist[i].done = !db.checklist[i].done; save(); };
-        window.removeCheck = (i) => { if(confirm('Delete?')) { db.checklist.splice(i, 1); save(); } };
+        window.removeCheck = (i) => { if(confirm('Delete Task?')) { db.checklist.splice(i, 1); save(); } };
         window.removeWish = (i) => { if(confirm('Remove Wish?')) { db.wishlist.splice(i, 1); save(); } };
         function setFilter(f) { currentFilter = f; refresh(); }
         function openEditModal(k, t) { activeEditKey = k; document.getElementById('modal-title').innerText = t; document.getElementById('modal-input').value = db[k]; toggleModal('edit-modal', true); }
