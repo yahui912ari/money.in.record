@@ -1,212 +1,386 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KANEBILITY | HKD_AUDIT_V61.2</title>
-    <style>
-        :root {
-            --bg: #ffffff;
-            --fg-bright: #000000;
-            --fg-base: #333333;
-            --fg-dim: #888888;
-            --fg-line: #cccccc;
-            --font-mono: ui-monospace, 'SF Mono', 'Roboto Mono', Menlo, Consolas, Courier, monospace;
-            --text-xs: 9px; --text-sm: 10px; --text-md: 11px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg); color: var(--fg-base);
-            font-family: var(--font-mono); font-size: var(--text-md);
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 12px;
-        }
-
-        .sys-header { padding-bottom: 8px; border-bottom: 2px dashed var(--fg-bright); margin-bottom: 12px; }
-        .header-row { display: flex; justify-content: space-between; font-size: var(--text-sm); }
-        .text-bright { color: var(--fg-bright); font-weight: bold; }
-
-        .sys-main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
-
-        .section-title {
-            color: var(--fg-bright); font-weight: bold; display: flex; justify-content: space-between;
-            padding-bottom: 2px; border-bottom: 1px dashed var(--fg-bright); font-size: var(--text-sm);
-        }
-
-        .cat-tag { 
-            cursor: pointer; padding: 2px 6px; border: 1px dashed var(--fg-line); transition: 0.1s;
-            font-size: var(--text-xs);
-        }
-        .cat-tag.active { background: #000; color: #fff; border-style: solid; border-color: #000; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; border: 1px dotted var(--fg-line); padding: 6px; }
-        .stat-item { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--fg-line); padding: 2px 0; }
-        .stat-label { color: var(--fg-dim); font-size: var(--text-xs); }
-
-        .ascii-chart {
-            font-family: var(--font-mono); font-size: 8px; line-height: 1.2;
-            color: var(--fg-bright); background: #fafafa; padding: 8px; 
-            border: 1px dashed var(--fg-line); margin-top: 4px; white-space: pre;
-            min-height: 62px;
-        }
-
-        .t-row { display: grid; grid-template-columns: 5ch 1fr 4ch 8ch; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--fg-line); }
-        .t-header { color: var(--fg-bright); font-weight: bold; border-bottom: 1px dashed var(--fg-bright); }
-
-        .input-dock { border-top: 2px dashed var(--fg-bright); padding-top: 10px; margin-top: 10px; }
-        .input-row { display: flex; gap: 4px; }
-        input, select { 
-            background: #fff; border: 1px dashed var(--fg-bright); color: #000; 
-            font-family: var(--font-mono); font-size: var(--text-sm); padding: 4px; outline: none; 
-        }
-        button { background: #000; color: #fff; border: 1px dashed #fff; padding: 4px 12px; font-weight: bold; cursor: pointer; }
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" vid="3">
+    <title vid="4">Ume Matrix | Expedition Master v11.0</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@1,500;1,600&amp;display=swap" rel="stylesheet" vid="6">
+    
+    <style vid="7">
+        body { -webkit-tap-highlight-color: transparent; background-color: #f8fbf8; font-family: 'Inter', sans-serif; color: #474a4d; }
+        .font-matrix-title { font-family: 'Playfair Display', serif; font-weight: 600; font-style: italic; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .glass-card { background: linear-gradient(145deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 8px 32px rgba(71, 74, 77, 0.05); }
+        .glass-input { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8); transition: all 0.2s ease; color: #474a4d; }
+        .glass-input::placeholder { color: rgba(71, 74, 77, 0.5); }
+        .glass-input:focus { outline: none; border-color: #a8c97f; background: rgba(255, 255, 255, 0.8); }
+        .ticker-container { mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); }
+        .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; display: flex; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-ticker { animation: ticker 60s linear infinite; }
+        .text-shadow-subtle { text-shadow: 0 1px 2px rgba(71, 74, 77, 0.1); }
+        
+        select.glass-input option { background-color: #ffffff; color: #474a4d; }
+        select option { background-color: #ffffff; color: #474a4d; }
     </style>
 </head>
-<body>
 
-    <div class="sys-header">
-        <div class="header-row">
-            <div>DOC: <span class="text-bright">HK_FIN_AUDIT_V61</span></div>
-            <div>VIEW: <span id="current-view" class="text-bright">GLOBAL</span></div>
-        </div>
-        <div class="header-row">
-            <div>BAL: <span id="load-val" class="text-bright">--</span> <span style="font-size:8px">HKD</span></div>
-            <div>REF: <span id="date-now" class="text-bright">--</span></div>
-        </div>
-    </div>
+<body class="w-full h-full flex flex-col overflow-hidden relative" vid="8">
 
-    <div class="sys-main">
-        <div class="section">
-            <div class="section-title">SECTOR_SELECTOR // 视图切换</div>
-            <div id="cat-stats" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
-        </div>
+    <div class="flex flex-col h-full w-full overflow-hidden relative z-10" vid="9">
+        <header class="pt-10 pb-4 px-6 flex-shrink-0 z-20 relative" vid="10">
+            <div class="flex justify-between items-start mb-6" vid="11">
+                <div vid="12">
+                    <h1 class="text-4xl font-matrix-title text-[#474a4d] leading-none mb-1" vid="13">Matrix</h1>
+                    <p class="text-[10px] font-bold text-[#474a4d]/60 tracking-[0.2em] uppercase" vid="14">Expedition Master v11.0</p>
+                </div>
+                <button id="fx-display" class="px-3 py-1.5 rounded-full glass-panel text-[10px] font-mono font-semibold text-[#474a4d]" onclick="updateFX()" vid="15">Syncing FX...</button>
+            </div>
 
-        <div class="section">
-            <div class="section-title"><span id="chart-title">GLOBAL_TRAJECTORY</span> // 采样波形</div>
-            <div id="main-ascii-chart" class="ascii-chart"></div>
-        </div>
+            <div class="glass-card rounded-[32px] p-6 mb-4" vid="16">
+                <div class="flex flex-col mb-5 cursor-pointer" onclick="openEditModal('baseBudget', 'Total Assets')" vid="17">
+                    <span class="text-[10px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="18">Total Assets (HKD)</span>
+                    <div class="text-4xl font-mono font-bold text-[#474a4d] tracking-tight" id="stat-assets" vid="19">0.00</div>
+                </div>
+                
+                <div class="flex items-center justify-between border-t border-white/60 pt-4 text-center" vid="20">
+                    <div class="flex-1 cursor-pointer" onclick="openEditModal('targetSaving', 'Target Saving')" vid="21">
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="22">Target</div>
+                        <div class="text-lg font-mono font-bold text-[#a8c97f]" id="stat-save" vid="23">0</div>
+                    </div>
+                    <div class="w-px h-8 bg-[#474a4d]/10 mx-2" vid="24"></div>
+                    <div class="flex-1" vid="25">
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="26">Daily Rec</div>
+                        <div class="text-lg font-mono font-bold text-[#e6cde3]" id="stat-daily" vid="27">0</div>
+                    </div>
+                    <div class="w-px h-8 bg-[#474a4d]/10 mx-2" vid="28"></div>
+                    <div class="flex-1" vid="29">
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="30">Cycle Left</div>
+                        <div class="text-lg font-mono font-bold text-[#474a4d]" id="stat-days" vid="31">0D</div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="section">
-            <div class="section-title">DESCRIPTIVE_STATS // 统计量</div>
-            <div class="stats-grid" id="sector-stats-grid"></div>
-        </div>
+            <div class="w-full h-12 rounded-full shadow-lg bg-white/80 backdrop-blur-xl border border-white flex items-center z-20 overflow-hidden relative cursor-grab active:cursor-grabbing" vid="32">
+                <div class="absolute left-1 z-10 bg-white shadow-sm px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest text-[#474a4d] flex items-center gap-1.5" vid="33">
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#a8c97f] animate-pulse" vid="34"></div>TICKER
+                </div>
+                <div class="ticker-container w-full h-full flex items-center ml-24" vid="35">
+                    <div id="main-ticker" class="flex whitespace-nowrap animate-ticker text-[11px] font-mono font-bold text-[#474a4d]/80 uppercase tracking-wide" vid="36"></div>
+                </div>
+            </div>
+        </header>
 
-        <div class="section" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-            <div class="section-title">TRANSACTION_STREAM</div>
-            <div style="overflow-y: auto; flex: 1; margin-top: 4px;">
-                <div class="t-row t-header"><span>TIME</span><span>LABEL</span><span>CAT</span><span style="text-align: right;">HKD</span></div>
-                <div id="log-list"></div>
+        <main class="flex-1 overflow-y-auto px-6 pt-2 pb-48 space-y-10 no-scrollbar z-10" vid="37">
+            <section vid="38">
+                <div class="flex justify-between items-center mb-4" vid="39">
+                    <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase" vid="40">Audit Stream</h2>
+                    <div id="audit-summary" class="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full font-mono font-bold text-[9px] text-[#474a4d] uppercase border border-white" vid="41">NET: 0</div>
+                </div>
+                <div class="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-1" id="audit-filters" vid="42"></div>
+                <div class="glass-card rounded-[24px] overflow-hidden" id="log-list" vid="43"></div>
+            </section>
+
+            <section vid="48">
+                <div class="flex justify-between items-center mb-4" vid="49">
+                    <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase" vid="50">Expedition Checklist</h2>
+                    <button onclick="toggleModal('checklist-modal', true)" class="text-[10px] bg-white/60 backdrop-blur-sm text-[#474a4d] border border-white px-3 py-1.5 rounded-full font-bold shadow-sm" vid="51">Generator</button>
+                </div>
+                <div id="checklist-container" class="space-y-2" vid="52"></div>
+            </section>
+
+            <section vid="53">
+                <div class="flex justify-between items-center mb-4" vid="54">
+                    <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase" vid="55">Due Planning</h2>
+                </div>
+                <div class="glass-card rounded-[24px] p-5 mb-4 space-y-3" vid="56">
+                    <div class="flex gap-2" vid="57">
+                        <select id="due-type" class="glass-input h-11 rounded-xl px-3 text-xs font-bold text-[#474a4d] uppercase w-28" vid="58">
+                            <option vid="59">Ticket</option><option vid="60">Event</option><option vid="61">Goods</option>
+                        </select>
+                        <input type="text" id="due-name" placeholder="Item Name (Match Checklist)" class="glass-input flex-1 rounded-xl px-4 text-sm" vid="62">
+                    </div>
+                    <div class="flex gap-2" vid="63">
+                        <input type="text" id="due-memo" placeholder="Memo" class="glass-input flex-1 rounded-xl px-4 text-sm" vid="64">
+                        <input type="text" id="due-date" placeholder="MM.DD" class="glass-input w-24 rounded-xl text-center text-sm font-mono h-11" vid="65">
+                    </div>
+                    <div class="flex gap-2" vid="66">
+                        <input type="number" id="due-amt" placeholder="HKD Amount" class="glass-input flex-1 rounded-xl px-4 h-11 text-sm font-mono" vid="67">
+                        <button onclick="addDue()" class="bg-[#474a4d] text-[#e6cde3] rounded-xl px-6 h-11 text-[10px] font-bold uppercase transition hover:brightness-110 shadow-md" vid="68">Plan</button>
+                    </div>
+                </div>
+                <div id="due-list" class="space-y-2" vid="69"></div>
+            </section>
+
+            <section vid="70">
+                <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase mb-4" vid="71">Wishlist</h2>
+                <div id="wish-container" class="space-y-3" vid="72"></div>
+                <button onclick="toggleModal('wish-modal', true)" class="w-full mt-3 py-3 rounded-2xl border border-dashed border-[#474a4d]/30 text-[10px] font-bold text-[#474a4d]/60 uppercase hover:bg-white/20 transition" vid="73">New Wish</button>
+            </section>
+        </main>
+
+        <div class="fixed bottom-0 left-0 right-0 p-5 z-40 pb-8 pointer-events-none" vid="74">
+            <div class="rounded-[32px] p-4 shadow-2xl pointer-events-auto bg-white/80 backdrop-blur-xl border border-white" vid="75">
+                <div class="flex justify-between items-center mb-4 px-2" vid="76">
+                    <div class="flex gap-5" vid="77">
+                        <label class="inline-flex items-center cursor-pointer" vid="78">
+                            <input type="checkbox" id="via-octo" class="sr-only peer" vid="79">
+                            <div class="w-8 h-4 bg-[#e6cde3] rounded-full peer-checked:bg-[#a8c97f] transition-colors border border-white" vid="80"></div>
+                            <span class="ml-2 text-[9px] font-bold text-[#474a4d] uppercase" vid="81">Octopus</span>
+                        </label>
+                    </div>
+                    <div class="flex gap-2" vid="82">
+                        <select id="in-cur" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold uppercase text-[#474a4d] focus:outline-none shadow-sm" vid="83"><option vid="84">HKD</option><option vid="85">JPY</option><option vid="86">CNY</option></select>
+                        <select id="in-cat" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold uppercase text-[#474a4d] focus:outline-none shadow-sm" vid="87">
+                            <option value="Meal" vid="88">Meal</option><option value="Transport" vid="89">Transport</option><option value="Shopping" vid="90">Shopping</option>
+                            <option value="Takarazuka" vid="91">Takarazuka</option><option value="TopUp" vid="92">Top Up</option><option value="Income" vid="93">Income</option><option value="Exclude" vid="94">Exclude</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2" vid="95">
+                    <input type="text" id="in-name" placeholder="Detail" class="glass-input flex-1 rounded-2xl px-4 text-sm h-12" vid="96">
+                    <input type="number" id="in-val" placeholder="0.00" class="glass-input w-24 rounded-2xl px-3 text-sm font-mono h-12 text-right" vid="97">
+                    <button onclick="commitTransaction()" class="bg-[#e6cde3] text-[#474a4d] rounded-2xl px-4 h-12 text-[10px] font-bold uppercase shadow-sm border border-white hover:brightness-95 transition-all" vid="98">Submit</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="input-dock">
-        <div class="input-row">
-            <input type="text" id="in-name" placeholder="label" style="flex: 2;">
-            <input type="number" id="in-val" placeholder="amount" style="flex: 1;">
-            <select id="in-cat">
-                <option value="食">食</option><option value="购">购</option>
-                <option value="行">行</option><option value="塚">塚</option>
-                <option value="入">入金</option>
-            </select>
-            <button onclick="commit()">EXEC</button>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); margin-top: 6px; color: #888;">
-            <div id="eq-val">f(x) standby...</div>
-            <div id="clock">00:00:00</div>
+    <div id="checklist-modal" class="modal-overlay" vid="99">
+        <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('checklist-modal', false)" vid="100"></div>
+        <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl" vid="101">
+            <h3 class="text-sm font-bold text-[#474a4d] uppercase mb-6 text-center" vid="102">Expedition Generator</h3>
+            <input type="text" id="tour-name" placeholder="Expedition/Performance Name" class="glass-input w-full rounded-2xl px-4 py-3.5 text-sm mb-4" vid="103">
+            <div class="flex gap-4 mb-4 items-center justify-between px-2" vid="104">
+                <span class="text-xs font-bold text-[#474a4d] uppercase" vid="105">Expedition Count</span>
+                <input type="number" id="tour-count" value="1" class="glass-input w-20 rounded-xl py-2 text-center font-mono" vid="106">
+            </div>
+            <div class="flex gap-4 mb-6 items-center justify-between px-2" vid="107">
+                <span class="text-xs font-bold text-[#474a4d] uppercase" vid="108">Include Event?</span>
+                <input type="checkbox" id="tour-event" class="w-5 h-5 accent-[#a8c97f]" vid="109">
+            </div>
+            <button onclick="generateTour()" class="w-full py-4 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] shadow-md hover:brightness-105 transition-all" vid="110">Generate</button>
         </div>
     </div>
 
-    <script>
-        const STORAGE_KEY = 'kanebility_v61_hk_data';
-        const BUDGET = 10215; // 已更新预算
-        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        let activeSector = 'GLOBAL';
+    <div id="edit-modal" class="modal-overlay" vid="111">
+        <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('edit-modal', false)" vid="112"></div>
+        <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 text-center shadow-2xl" vid="113">
+            <h3 id="modal-title" class="text-xs font-bold uppercase mb-6 text-[#474a4d]" vid="114">Update</h3>
+            <input type="number" id="modal-input" class="glass-input w-full rounded-2xl py-4 text-2xl font-mono font-bold text-center mb-6" vid="115">
+            <div class="flex gap-3" vid="116">
+                <button onclick="toggleModal('edit-modal', false)" class="flex-1 py-3 rounded-2xl text-xs font-bold text-[#474a4d] bg-white/60 border border-white hover:bg-white/80 transition-all shadow-sm" vid="117">Cancel</button>
+                <button onclick="saveEditModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] shadow-md hover:brightness-105 transition-all" vid="118">Save</button>
+            </div>
+        </div>
+    </div>
 
-        function getStats(vals) {
-            if (!vals.length) return { avg:0, med:0, std:0, max:0, cnt:0 };
-            const n = vals.length;
-            const avg = vals.reduce((a, b) => a + b, 0) / n;
-            const sorted = [...vals].sort((a, b) => a - b);
-            const med = n % 2 !== 0 ? sorted[Math.floor(n/2)] : (sorted[n/2-1] + sorted[n/2]) / 2;
-            const std = Math.sqrt(vals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / n);
-            return { avg, med, std, max: Math.max(...vals), cnt: n };
+    <div id="wish-modal" class="modal-overlay" vid="119">
+        <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('wish-modal', false)" vid="120"></div>
+        <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl" vid="121">
+            <h3 class="text-sm font-bold text-[#474a4d] uppercase mb-6 text-center" vid="122">New Wish</h3>
+            <input type="text" id="wish-name" placeholder="Item Name" class="glass-input w-full rounded-2xl px-4 py-3.5 text-sm mb-4" vid="123">
+            <input type="number" id="wish-target" placeholder="Price (HKD)" class="glass-input w-full rounded-2xl px-4 py-3.5 text-sm font-mono mb-6" vid="124">
+            <button onclick="addWish()" class="w-full py-4 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] shadow-md hover:brightness-105 transition-all" vid="125">Add Wish</button>
+        </div>
+    </div>
+
+    <script vid="126">
+        const STORAGE_KEY = 'ume_matrix_v11_expedition_pink';
+        let FX = { HKD: 1.0, JPY: 0.052, CNY: 1.10 };
+        let currentFilter = 'All', activeEditKey = null;
+
+        let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
+            records: [], dueDates: [], checklist: [], wishlist: [], baseBudget: 25000, targetSaving: 5000, octopusBal: 1000 
+        };
+
+        function toggleModal(id, show) {
+            const el = document.getElementById(id);
+            if (show) el.classList.add('active');
+            else el.classList.remove('active');
         }
 
-        function drawChart(dataPoints) {
-            if (dataPoints.length < 2) return "\n   [ DATA_STREAM_EMPTY ]\n   [ WAITING_FOR_INPUT ]";
-            const width = 40, height = 4;
-            let canvas = Array(height).fill(0).map(() => Array(width).fill(' '));
-            const max = Math.max(...dataPoints.map(p => p.y)), min = Math.min(...dataPoints.map(p => p.y));
-            const range = (max - min) || 1;
-            dataPoints.forEach((p, i) => {
-                const x = Math.floor((i / (dataPoints.length - 1)) * (width - 1));
-                const y = Math.floor(((p.y - min) / range) * (height - 1));
-                canvas[(height - 1) - y][x] = 'o';
-            });
-            return canvas.map(row => row.join('')).join('\n') + "\n" + "- ".repeat(width/2);
+        async function updateFX() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/HKD');
+                const data = await res.json();
+                if(data.rates) {
+                    FX.JPY = 1 / data.rates.JPY; FX.CNY = 1 / data.rates.CNY;
+                    document.getElementById('fx-display').innerText = `JPY ${FX.JPY.toFixed(4)} • CNY ${FX.CNY.toFixed(2)}`;
+                    refresh();
+                }
+            } catch(e) { document.getElementById('fx-display').innerText = "Offline FX"; }
         }
 
-        function setView(sector) { activeSector = sector; refresh(); }
+        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); refresh(); }
 
-        function commit() {
-            const val = parseFloat(document.getElementById('in-val').value);
-            if(!val) return;
-            records.unshift({
-                time: new Date().toLocaleTimeString('zh-CN', {hour12:false, hour:'2-digit', minute:'2-digit'}),
-                name: document.getElementById('in-name').value || 'item',
-                val, cat: document.getElementById('in-cat').value,
-                day: new Date().getDate(), ts: Date.now()
+        function getCycleDays() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const lastDayThisMonth = new Date(year, month + 1, 0);
+            const lastDayNextMonth = new Date(year, month + 2, 0);
+            
+            if (now.getDate() === lastDayThisMonth.getDate()) {
+                const diffTime = lastDayNextMonth - now;
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            } else {
+                const diffTime = lastDayThisMonth - now;
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+        }
+
+        function calculateStats() {
+            let pool = db.baseBudget, octo = db.octopusBal, todaySpent = 0;
+            const todayStr = `${new Date().getMonth()+1}.${new Date().getDate()}`;
+            db.records.forEach(r => {
+                if(r.category === 'Exclude') return;
+                if(r.category === 'Income') pool += r.valHKD;
+                else if(r.category === 'TopUp') { pool -= r.valHKD; octo += r.valHKD; }
+                else {
+                    if(r.viaOcto) octo -= r.valHKD; else pool -= r.valHKD;
+                    if(r.fullDate === todayStr && ['Meal','Transport','Shopping'].includes(r.category)) todaySpent += r.valHKD;
+                }
             });
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-            document.getElementById('in-name').value = '';
-            document.getElementById('in-val').value = '';
-            refresh();
+            const daysLeft = getCycleDays();
+            const rec = Math.max(0, (pool - db.targetSaving) * 0.8 / daysLeft);
+            return { pool, octo, rec, daysLeft, todaySpent };
+        }
+
+        function commitTransaction() {
+            const v = parseFloat(document.getElementById('in-val').value);
+            const cur = document.getElementById('in-cur').value;
+            const cat = document.getElementById('in-cat').value;
+            const name = document.getElementById('in-name').value || cat;
+            if(isNaN(v) || v <= 0) return;
+
+            const stats = calculateStats();
+            const valHKD = v * FX[cur];
+
+            if(['Meal','Transport','Shopping'].includes(cat) && db.wishlist.length > 0) {
+                const saving = (stats.rec - stats.todaySpent) - valHKD;
+                if(saving > 0) db.wishlist[0].saved += saving;
+            }
+
+            db.records.unshift({ 
+                name, valHKD, category: cat, 
+                viaOcto: document.getElementById('via-octo').checked, 
+                fullDate: `${new Date().getMonth()+1}.${new Date().getDate()}` 
+            });
+            document.getElementById('in-val').value = ''; document.getElementById('in-name').value = '';
+            save();
+        }
+
+        function generateTour() {
+            const name = document.getElementById('tour-name').value;
+            const count = parseInt(document.getElementById('tour-count').value);
+            const hasEvent = document.getElementById('tour-event').checked;
+            if(!name) return;
+            
+            db.checklist.push({ name: `${name} | Ticket`, done: false, group: name, type: 'Ticket' });
+            if(hasEvent) db.checklist.push({ name: `${name} | Event`, done: false, group: name, type: 'Event' });
+            for(let i=1; i<=count; i++) {
+                db.checklist.push({ name: `${name} | Hotel ${i}`, done: false, group: name });
+                db.checklist.push({ name: `${name} | Flight (Go) ${i}`, done: false, group: name });
+                db.checklist.push({ name: `${name} | Flight (Back) ${i}`, done: false, group: name });
+            }
+            toggleModal('checklist-modal', false); save();
+        }
+
+        function addDue() {
+            const n = document.getElementById('due-name').value, a = document.getElementById('due-amt').value, d = document.getElementById('due-date').value, t = document.getElementById('due-type').value, m = document.getElementById('due-memo').value;
+            if(!n || !a) return;
+            db.dueDates.push({ id: Date.now(), type: t, name: n, amount: parseFloat(a), date: d || '99.99', memo: m });
+            document.getElementById('due-name').value = ''; document.getElementById('due-amt').value = ''; save();
+        }
+
+        function executeDue(id) {
+            const idx = db.dueDates.findIndex(d => d.id === id);
+            const item = db.dueDates[idx];
+            if(confirm(`Pay ${item.name}?`)) {
+                db.checklist.forEach(cl => {
+                    if(cl.group === item.name && cl.type === item.type) cl.done = true;
+                });
+                db.records.unshift({ name: `[${item.type}] ${item.name}`, valHKD: item.amount, category: 'Takarazuka', viaOcto: false, fullDate: `${new Date().getMonth()+1}.${new Date().getDate()}` });
+                db.dueDates.splice(idx, 1); save();
+            }
+        }
+
+        function addWish() {
+            const n = document.getElementById('wish-name').value, t = parseFloat(document.getElementById('wish-target').value);
+            if(n && t) { db.wishlist.push({ name: n, target: t, saved: 0 }); toggleModal('wish-modal', false); save(); }
         }
 
         function refresh() {
-            document.getElementById('current-view').innerText = activeSector;
-            document.getElementById('date-now').innerText = new Date().toISOString().split('T')[0];
-            
-            const spentRecs = records.filter(r => r.cat !== '入');
-            const filteredRecs = activeSector === 'GLOBAL' ? spentRecs : spentRecs.filter(r => r.cat === activeSector);
-            const vals = filteredRecs.map(r => r.val);
+            const s = calculateStats();
+            document.getElementById('stat-assets').innerText = s.pool.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('stat-save').innerText = db.targetSaving.toLocaleString();
+            document.getElementById('stat-daily').innerText = s.rec.toFixed(0);
+            document.getElementById('stat-days').innerText = `${s.daysLeft}D`;
 
-            const cats = ['GLOBAL', '食', '购', '行', '塚'];
-            document.getElementById('cat-stats').innerHTML = cats.map(c => {
-                const total = records.filter(r => (c==='GLOBAL'?r.cat!=='入':r.cat===c)).reduce((a,b)=>a+b.val,0);
-                return `<span class="cat-tag ${activeSector===c?'active':''}" onclick="setView('${c}')">${c}:${total.toFixed(0)}</span>`;
+            
+            let tickerParts = [];
+            db.checklist.filter(c => !c.done).forEach(c => tickerParts.push(`TASK: ${c.name}`));
+            db.dueDates.forEach(d => tickerParts.push(`DUE: ${d.name} (${d.amount}) ${d.date}`));
+            db.wishlist.forEach(w => tickerParts.push(`WISH: ${w.name} ${((w.saved/w.target)*100).toFixed(1)}%`));
+            document.getElementById('main-ticker').innerHTML = (tickerParts.length ? tickerParts.map(p => `<span class="mx-10 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#e6cde3] inline-block"></span>${p}</span>`).join('') : `<span class="mx-10 opacity-40">ALL CLEAR</span>`).repeat(5);
+
+            
+            const cats = ['All', 'Meal', 'Transport', 'Shopping', 'Takarazuka', 'TopUp', 'Income', 'Exclude'];
+            document.getElementById('audit-filters').innerHTML = cats.map(c => `<button onclick="setFilter('${c}')" class="px-4 py-1.5 rounded-full border border-white/50 text-[10px] font-bold uppercase transition-all shadow-sm ${currentFilter === c ? 'bg-[#474a4d] text-white' : 'bg-white/40 text-[#474a4d]/70'}">${c}</button>`).join('');
+            const filtered = db.records.filter(r => currentFilter === 'All' || r.category === currentFilter);
+            document.getElementById('log-list').innerHTML = filtered.slice(0, 10).map(r => `<div class="flex justify-between items-center p-4 border-b border-white/40 last:border-0"><div class="text-xs font-bold text-[#474a4d]">${r.name}<div class="text-[9px] text-[#474a4d]/50 uppercase">${r.fullDate} | ${r.category}</div></div><div class="font-mono font-bold text-sm ${r.category==='Income'?'text-[#a8c97f]':(r.category==='Exclude'?'text-[#474a4d]/40':'text-[#474a4d]')}">${r.category==='Income'?'+':(r.category==='Exclude'?'*':'-')}${r.valHKD.toFixed(1)}</div></div>`).join('');
+            const net = filtered.reduce((a,b) => a + (b.category==='Income'?b.valHKD:(b.category==='Exclude'?0:-b.valHKD)), 0);
+            document.getElementById('audit-summary').innerText = `NET: ${net.toFixed(1)}`;
+
+            
+            document.getElementById('checklist-container').innerHTML = db.checklist.map((c, i) => `
+                <div class="glass-card rounded-2xl p-3 flex justify-between items-center transition-all ${c.done?'opacity-50 grayscale':''}">
+                    <span class="text-xs font-semibold text-[#474a4d] ${c.done?'line-through':''}">${c.name}</span>
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${c.done?'checked':''} onchange="toggleCheck(${i})" class="w-4 h-4 rounded accent-[#a8c97f] cursor-pointer">
+                        <button onclick="removeCheck(${i})" class="text-[10px] text-[#474a4d]/40 hover:text-[#474a4d] uppercase font-bold transition">Del</button>
+                    </div>
+                </div>`).join('');
+
+            
+            const sortedDue = [...db.dueDates].sort((a, b) => a.date.localeCompare(b.date));
+            document.getElementById('due-list').innerHTML = sortedDue.map(d => `
+                <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="text-[10px] font-bold text-[#474a4d]/60 uppercase mb-1">${d.date} | ${d.type}</div>
+                        <div class="text-xs font-bold text-[#474a4d]">${d.name} <span class="font-normal text-[#474a4d]/50 ml-2">${d.memo}</span></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-sm font-mono font-bold text-[#474a4d]">${d.amount}</div>
+                        <button onclick="executeDue(${d.id})" class="bg-[#474a4d] text-[#e6cde3] text-[9px] font-bold px-3 py-2 rounded-lg uppercase shadow-sm hover:brightness-110 transition">Pay</button>
+                    </div>
+                </div>`).join('');
+
+            
+            document.getElementById('wish-container').innerHTML = db.wishlist.map((w, i) => {
+                const perc = Math.min(100, (w.saved/w.target)*100);
+                return `<div class="glass-card rounded-2xl p-4">
+                    <div class="flex justify-between mb-2 text-[10px] font-bold text-[#474a4d] uppercase"><span>${w.name}</span><span>${w.saved.toFixed(0)}/${w.target}</span></div>
+                    <div class="w-full h-1.5 bg-white/60 rounded-full overflow-hidden mb-3 border border-white/50 shadow-inner"><div class="h-full bg-[#a8c97f] transition-all duration-500 shadow-sm" style="width:${perc}%"></div></div>
+                    <div class="flex gap-2">
+                        <button onclick="${perc>=100?`manifest(${i})`:''}" class="flex-1 py-2 rounded-lg text-[9px] font-bold uppercase transition ${perc>=100?'bg-[#a8c97f] text-white shadow-sm':'bg-white/40 text-[#474a4d]/50 border border-white cursor-default'}">${perc>=100?'Manifest':'Saving '+perc.toFixed(1)+'%'}</button>
+                        <button onclick="removeWish(${i})" class="px-3 py-2 bg-white/40 border border-white text-[#474a4d]/50 hover:text-[#474a4d] rounded-lg text-[9px] font-bold uppercase transition shadow-sm">X</button>
+                    </div>
+                </div>`;
             }).join('');
-
-            let rSum = 0;
-            let trendPoints = [...filteredRecs].reverse().map(r => ({x: r.day, y: rSum += r.val}));
-            document.getElementById('chart-title').innerText = `${activeSector}_TRAJECTORY`;
-            document.getElementById('main-ascii-chart').innerText = drawChart(trendPoints);
-
-            const s = getStats(vals);
-            document.getElementById('sector-stats-grid').innerHTML = `
-                <div class="stat-item"><span class="stat-label">AVG</span><span class="stat-val">${s.avg.toFixed(1)}</span></div>
-                <div class="stat-item"><span class="stat-label">MED</span><span class="stat-val">${s.med.toFixed(1)}</span></div>
-                <div class="stat-item"><span class="stat-label">STD</span><span class="stat-val">${s.std.toFixed(1)}</span></div>
-                <div class="stat-item"><span class="stat-label">MAX</span><span class="stat-val">${s.max.toFixed(1)}</span></div>
-            `;
-
-            const totalSpent = spentRecs.reduce((a,b)=>a+b.val,0);
-            const totalIn = records.filter(r=>r.cat==='入').reduce((a,b)=>a+b.val,0);
-            document.getElementById('load-val').innerText = Math.round(BUDGET + totalIn - totalSpent).toLocaleString();
-            
-            document.getElementById('log-list').innerHTML = filteredRecs.slice(0, 15).map(r => `
-                <div class="t-row">
-                    <span style="color:var(--fg-dim)">${r.time}</span>
-                    <span style="color:var(--fg-bright)">${r.name}</span>
-                    <span style="color:var(--fg-dim)">${r.cat}</span>
-                    <span style="text-align: right; font-weight:bold;">${r.val.toFixed(0)}</span>
-                </div>
-            `).join('') || `<div style="text-align:center; padding:20px; color:#ccc; font-size:9px;">[ LOG_EMPTY ]</div>`;
         }
 
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        window.onload = refresh;
+        window.toggleCheck = (i) => { db.checklist[i].done = !db.checklist[i].done; save(); };
+        window.removeCheck = (i) => { db.checklist.splice(i, 1); save(); };
+        window.removeWish = (i) => { db.wishlist.splice(i, 1); save(); };
+        function setFilter(f) { currentFilter = f; refresh(); }
+        function openEditModal(k, t) { activeEditKey = k; document.getElementById('modal-title').innerText = t; document.getElementById('modal-input').value = db[k]; toggleModal('edit-modal', true); }
+        function saveEditModal() { db[activeEditKey] = parseFloat(document.getElementById('modal-input').value) || 0; toggleModal('edit-modal', false); save(); }
+        function manifest(i) { const item = db.wishlist[i]; db.records.unshift({ name: `Wish: ${item.name}`, valHKD: item.target, category: 'Shopping', viaOcto: false, fullDate: `${new Date().getMonth()+1}.${new Date().getDate()}` }); db.wishlist.splice(i, 1); save(); }
+
+        updateFX(); setInterval(updateFX, 3600000);
     </script>
-</body>
-</html>
+
+</body></html>
