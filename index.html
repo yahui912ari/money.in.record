@@ -6,18 +6,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@1,500;1,600&amp;display=swap" rel="stylesheet" vid="6">
     
     <style vid="7">
-        /* 全局 UI 修正 */
-        body { -webkit-tap-highlight-color: transparent; background-color: #f8fbf8; font-family: 'Inter', sans-serif; color: #474a4d; overflow-x: hidden; width: 100%; }
+        /* 全局 UI 修正 - 全页面滚动流 */
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            background-color: #f8fbf8; 
+            font-family: 'Inter', sans-serif; 
+            color: #474a4d; 
+            overflow-x: hidden; 
+            width: 100%;
+            height: auto; 
+        }
         .font-matrix-title { font-family: 'Playfair Display', serif; font-weight: 600; font-style: italic; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 玻璃态组件 */
         .glass-panel { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); }
         .glass-card { background: linear-gradient(145deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 8px 32px rgba(71, 74, 77, 0.05); }
         .glass-input { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8); transition: all 0.2s ease; color: #474a4d; width: 100%; }
         .glass-input:focus { outline: none; border-color: #a8c97f; background: rgba(255, 255, 255, 0.8); }
         
-        /* 兼容性弹性布局 */
         .responsive-flex { display: flex; flex-wrap: wrap; gap: 8px; }
         .btn-active:active { transform: scale(0.96); }
         
@@ -28,14 +34,14 @@
         .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; display: flex; }
         
-        select.glass-input option { background-color: #ffffff; color: #474a4d; }
+        .page-content { width: 100%; display: flex; flex-direction: column; }
     </style>
 </head>
 
-<body class="w-full h-full flex flex-col relative" vid="8">
+<body class="relative" vid="8">
 
-    <div class="flex flex-col h-full w-full relative z-10" vid="9">
-        <header class="pt-10 pb-4 px-6 flex-shrink-0 z-20 relative" vid="10">
+    <div class="page-content" vid="9">
+        <header class="pt-12 pb-4 px-6 relative" vid="10">
             <div class="flex justify-between items-start mb-6" vid="11">
                 <div vid="12">
                     <h1 class="text-4xl font-matrix-title text-[#474a4d] leading-none mb-1" vid="13">Matrix</h1>
@@ -68,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="w-full h-10 rounded-full shadow-lg bg-white/80 backdrop-blur-xl border border-white flex items-center z-20 overflow-hidden relative" vid="32">
+            <div class="w-full h-10 rounded-full shadow-lg bg-white/80 backdrop-blur-xl border border-white flex items-center overflow-hidden relative" vid="32">
                 <div class="absolute left-1 z-10 bg-white shadow-sm px-3 py-1 rounded-full text-[8px] font-bold tracking-widest text-[#474a4d] flex items-center gap-1.5" vid="33">
                     <div class="w-1 h-1 rounded-full bg-[#a8c97f] animate-pulse" vid="34"></div>TICKER
                 </div>
@@ -78,7 +84,7 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto px-6 pt-2 pb-56 space-y-8 no-scrollbar z-10" vid="37">
+        <main class="px-6 pt-4 pb-64 space-y-10" vid="37">
             <section vid="38">
                 <div class="flex justify-between items-center mb-4" vid="39">
                     <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase" vid="40">Audit Stream</h2>
@@ -117,34 +123,34 @@
                 <div id="due-list" class="space-y-2" vid="69"></div>
             </section>
 
-            <section vid="70">
+            <section vid="70" class="pb-10">
                 <h2 class="text-xs font-bold text-[#474a4d] tracking-widest uppercase mb-4" vid="71">Wishlist</h2>
                 <div id="wish-container" class="space-y-3" vid="72"></div>
                 <button onclick="toggleModal('wish-modal', true)" class="w-full mt-3 py-3 rounded-2xl border border-dashed border-[#474a4d]/30 text-[10px] font-bold text-[#474a4d]/60 uppercase btn-active" vid="73">New Wish</button>
             </section>
         </main>
+    </div>
 
-        <div class="fixed bottom-0 left-0 right-0 p-4 z-40 pb-10 pointer-events-none" vid="74">
-            <div class="rounded-[30px] p-4 shadow-2xl pointer-events-auto bg-white/90 backdrop-blur-xl border border-white max-w-md mx-auto" vid="75">
-                <div class="flex flex-wrap justify-between items-center gap-3 mb-3 px-1" vid="76">
-                    <label class="inline-flex items-center cursor-pointer" vid="78">
-                        <input type="checkbox" id="via-octo" class="sr-only peer" vid="79">
-                        <div class="w-8 h-4 bg-[#e6cde3] rounded-full peer-checked:bg-[#a8c97f] transition-colors border border-white" vid="80"></div>
-                        <span class="ml-2 text-[9px] font-bold text-[#474a4d] uppercase" vid="81">Octopus</span>
-                    </label>
-                    <div class="flex gap-2" vid="82">
-                        <select id="in-cur" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold text-[#474a4d]" vid="83"><option vid="84">HKD</option><option vid="85">JPY</option><option vid="86">CNY</option></select>
-                        <select id="in-cat" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold text-[#474a4d]" vid="87">
-                            <option value="Meal">Meal</option><option value="Transport">Transport</option><option value="Shopping">Shopping</option>
-                            <option value="Takarazuka">Takarazuka</option><option value="TopUp">TopUp</option><option value="Income">Income</option>
-                        </select>
-                    </div>
+    <div class="fixed bottom-0 left-0 right-0 p-4 z-40 pb-10 pointer-events-none" vid="74">
+        <div class="rounded-[30px] p-4 shadow-2xl pointer-events-auto bg-white/90 backdrop-blur-xl border border-white max-w-md mx-auto" vid="75">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-3 px-1" vid="76">
+                <label class="inline-flex items-center cursor-pointer" vid="78">
+                    <input type="checkbox" id="via-octo" class="sr-only peer" vid="79">
+                    <div class="w-8 h-4 bg-[#e6cde3] rounded-full peer-checked:bg-[#a8c97f] transition-colors border border-white" vid="80"></div>
+                    <span class="ml-2 text-[9px] font-bold text-[#474a4d] uppercase" vid="81">Octopus</span>
+                </label>
+                <div class="flex gap-2" vid="82">
+                    <select id="in-cur" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold text-[#474a4d]" vid="83"><option vid="84">HKD</option><option vid="85">JPY</option><option vid="86">CNY</option></select>
+                    <select id="in-cat" class="bg-white/60 border border-white rounded-lg px-2 py-1.5 text-[10px] font-bold text-[#474a4d]" vid="87">
+                        <option value="Meal">Meal</option><option value="Transport">Transport</option><option value="Shopping">Shopping</option>
+                        <option value="Takarazuka">Takarazuka</option><option value="TopUp">TopUp</option><option value="Income">Income</option>
+                    </select>
                 </div>
-                <div class="responsive-flex" vid="95">
-                    <input type="text" id="in-name" placeholder="Detail" class="glass-input flex-[2_1_120px] rounded-xl px-4 text-sm h-12" vid="96">
-                    <input type="number" id="in-val" placeholder="0.00" class="glass-input flex-[1_1_70px] rounded-xl px-3 text-sm font-mono h-12 text-right" vid="97">
-                    <button onclick="commitTransaction()" class="bg-[#e6cde3] text-[#474a4d] rounded-xl px-4 h-12 text-[10px] font-bold uppercase btn-active shadow-sm border border-white" vid="98">Submit</button>
-                </div>
+            </div>
+            <div class="responsive-flex" vid="95">
+                <input type="text" id="in-name" placeholder="Detail" class="glass-input flex-[2_1_120px] rounded-xl px-4 text-sm h-12" vid="96">
+                <input type="number" id="in-val" placeholder="0.00" class="glass-input flex-[1_1_70px] rounded-xl px-3 text-sm font-mono h-12 text-right" vid="97">
+                <button onclick="commitTransaction()" class="bg-[#e6cde3] text-[#474a4d] rounded-xl px-4 h-12 text-[10px] font-bold uppercase btn-active shadow-sm border border-white" vid="98">Submit</button>
             </div>
         </div>
     </div>
@@ -174,18 +180,7 @@
         </div>
     </div>
 
-    <div id="wish-modal" class="modal-overlay" vid="119">
-        <div class="absolute inset-0 bg-[#474a4d]/20 backdrop-blur-sm" onclick="toggleModal('wish-modal', false)"></div>
-        <div class="glass-card rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl">
-            <h3 class="text-sm font-bold text-[#474a4d] uppercase mb-6 text-center">New Wish</h3>
-            <input type="text" id="wish-name" placeholder="Item Name" class="glass-input rounded-2xl px-4 py-3.5 text-sm mb-4">
-            <input type="number" id="wish-target" placeholder="Price (HKD)" class="glass-input rounded-2xl px-4 py-3.5 text-sm font-mono mb-6">
-            <button onclick="addWish()" class="w-full py-4 rounded-2xl text-xs font-bold text-white bg-[#a8c97f] btn-active">Add Wish</button>
-        </div>
-    </div>
-
     <script vid="126">
-        // 保持原有 JS 逻辑不变
         const STORAGE_KEY = 'ume_matrix_v11_expedition_pink';
         let FX = { HKD: 1.0, JPY: 0.052, CNY: 1.10 };
         let currentFilter = 'All', activeEditKey = null;
@@ -214,11 +209,22 @@
 
         function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); refresh(); }
 
+        // 修正后的周期计算逻辑
         function getCycleDays() {
             const now = new Date();
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            const diff = lastDay - now;
-            return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const lastDayThisMonth = new Date(year, month + 1, 0); // 本月最后一天
+            
+            // 如果今天是本月最后一天
+            if (now.getDate() === lastDayThisMonth.getDate()) {
+                const lastDayNextMonth = new Date(year, month + 2, 0); // 获取下个月最后一天
+                const diffTime = lastDayNextMonth - now;
+                return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); // 返回整个下个月的天数
+            } else {
+                const diffTime = lastDayThisMonth - now;
+                return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            }
         }
 
         function calculateStats() {
@@ -244,15 +250,8 @@
             const cat = document.getElementById('in-cat').value;
             const name = document.getElementById('in-name').value || cat;
             if(isNaN(v) || v <= 0) return;
-
             const stats = calculateStats();
             const valHKD = v * FX[cur];
-
-            if(['Meal','Transport','Shopping'].includes(cat) && db.wishlist.length > 0) {
-                const saving = (stats.rec - stats.todaySpent) - valHKD;
-                if(saving > 0) db.wishlist[0].saved += saving;
-            }
-
             db.records.unshift({ 
                 name, valHKD, category: cat, 
                 viaOcto: document.getElementById('via-octo').checked, 
@@ -290,11 +289,6 @@
             }
         }
 
-        function addWish() {
-            const n = document.getElementById('wish-name').value, t = parseFloat(document.getElementById('wish-target').value);
-            if(n && t) { db.wishlist.push({ name: n, target: t, saved: 0 }); toggleModal('wish-modal', false); save(); }
-        }
-
         function refresh() {
             const s = calculateStats();
             document.getElementById('stat-assets').innerText = s.pool.toLocaleString(undefined, {minimumFractionDigits:2});
@@ -324,14 +318,6 @@
                     <div class="text-xs font-bold text-[#474a4d]">${d.name}<div class="text-[9px] opacity-50">${d.date}</div></div>
                     <button onclick="executeDue(${d.id})" class="bg-[#474a4d] text-[#e6cde3] text-[9px] font-bold px-3 py-2 rounded-lg uppercase btn-active">Pay</button>
                 </div>`).join('');
-
-            document.getElementById('wish-container').innerHTML = db.wishlist.map((w, i) => {
-                const perc = Math.min(100, (w.saved/w.target)*100);
-                return `<div class="glass-card rounded-2xl p-4">
-                    <div class="flex justify-between mb-2 text-[10px] font-bold uppercase"><span>${w.name}</span><span>${perc.toFixed(1)}%</span></div>
-                    <div class="w-full h-1.5 bg-white/60 rounded-full overflow-hidden"><div class="h-full bg-[#a8c97f]" style="width:${perc}%"></div></div>
-                </div>`;
-            }).join('');
         }
 
         window.toggleCheck = (i) => { db.checklist[i].done = !db.checklist[i].done; save(); };
