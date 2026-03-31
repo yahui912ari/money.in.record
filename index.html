@@ -1,7 +1,7 @@
 <html lang="en" vid="0"><head vid="1">
     <meta charset="UTF-8" vid="2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" vid="3">
-    <title vid="4">Ume Matrix | Expedition Master v11.3</title>
+    <title vid="4">Ume Matrix | Expedition Master v11.4</title>
     <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@1,500;1,600&amp;display=swap" rel="stylesheet" vid="6">
     
@@ -29,30 +29,37 @@
             <div class="flex justify-between items-start mb-6" vid="11">
                 <div vid="12">
                     <h1 class="text-4xl font-matrix-title text-[#474a4d] leading-none mb-1" vid="13">Matrix</h1>
-                    <p class="text-[10px] font-bold text-[#474a4d]/60 tracking-[0.2em] uppercase" vid="14">Expedition Master v11.3</p>
+                    <p class="text-[10px] font-bold text-[#474a4d]/60 tracking-[0.2em] uppercase" vid="14">Expedition Master v11.4</p>
                 </div>
                 <button id="fx-display" class="px-3 py-1.5 rounded-full glass-panel text-[10px] font-mono font-semibold text-[#474a4d] btn-active" onclick="updateFX()" vid="15">Syncing FX...</button>
             </div>
 
             <div class="glass-card rounded-[32px] p-6 mb-4" vid="16">
-                <div class="flex flex-col mb-5 cursor-pointer" onclick="openEditModal('baseBudget', 'Total Assets')" vid="17">
-                    <span class="text-[10px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="18">Total Assets (HKD)</span>
-                    <div class="text-3xl font-mono font-bold text-[#474a4d] tracking-tight break-all" id="stat-assets" vid="19">0.00</div>
+                <div class="flex gap-4 mb-5" vid="17">
+                    <div class="flex-1 flex flex-col cursor-pointer border-r border-[#474a4d]/5" onclick="openEditModal('baseBudget', 'Total Assets')" vid="18">
+                        <span class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1">Total (HKD)</span>
+                        <div class="text-2xl font-mono font-bold text-[#474a4d] tracking-tight break-all" id="stat-assets">0.00</div>
+                    </div>
+                    <div class="flex-1 flex flex-col cursor-pointer pl-2" onclick="openEditModal('octopusBal', 'Octopus Initial')" vid="19">
+                        <span class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1">Octopus</span>
+                        <div class="text-2xl font-mono font-bold text-[#e6cde3] tracking-tight break-all" id="stat-octo">0.00</div>
+                    </div>
                 </div>
+                
                 <div class="flex items-center justify-between border-t border-white/60 pt-4 text-center gap-1" vid="20">
                     <div class="flex-1 cursor-pointer" onclick="openEditModal('targetSaving', 'Target Saving')" vid="21">
-                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="22">Target</div>
-                        <div class="text-base font-mono font-bold text-[#a8c97f]" id="stat-save" vid="23">0</div>
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1">Target</div>
+                        <div class="text-base font-mono font-bold text-[#a8c97f]" id="stat-save">0</div>
                     </div>
                     <div class="w-px h-6 bg-[#474a4d]/10" vid="24"></div>
                     <div class="flex-1" vid="25">
-                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="26">Daily Rec</div>
-                        <div class="text-base font-mono font-bold text-[#e6cde3]" id="stat-daily" vid="27">0</div>
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1">Daily Rec</div>
+                        <div class="text-base font-mono font-bold text-[#e6cde3]" id="stat-daily">0</div>
                     </div>
                     <div class="w-px h-6 bg-[#474a4d]/10" vid="28"></div>
                     <div class="flex-1" vid="29">
-                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1" vid="30">Cycle Left</div>
-                        <div class="text-base font-mono font-bold text-[#474a4d]" id="stat-days" vid="31">0D</div>
+                        <div class="text-[9px] text-[#474a4d]/60 uppercase font-bold tracking-wider mb-1">Cycle Left</div>
+                        <div class="text-base font-mono font-bold text-[#474a4d]" id="stat-days">0D</div>
                     </div>
                 </div>
             </div>
@@ -223,9 +230,7 @@
         function calculateStats() {
             let pool = db.baseBudget, octo = db.octopusBal;
             db.records.forEach(r => {
-                // Exclude 类别：不扣钱，不进账，仅记录
                 if(r.category === 'Exclude') return; 
-                
                 if(r.category === 'Income') pool += r.valHKD;
                 else if(r.category === 'TopUp') { pool -= r.valHKD; octo += r.valHKD; }
                 else {
@@ -301,6 +306,7 @@
         function refresh() {
             const s = calculateStats();
             document.getElementById('stat-assets').innerText = s.pool.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('stat-octo').innerText = s.octo.toLocaleString(undefined, {minimumFractionDigits:2});
             document.getElementById('stat-save').innerText = db.targetSaving.toLocaleString();
             document.getElementById('stat-daily').innerText = s.rec.toFixed(0);
             document.getElementById('stat-days').innerText = `${s.daysLeft}D`;
@@ -316,7 +322,7 @@
             const filtered = db.records.filter(r => currentFilter === 'All' || r.category === currentFilter);
             document.getElementById('log-list').innerHTML = filtered.slice(0, 15).map(r => `
                 <div class="flex justify-between items-center p-4 border-b border-white/40 last:border-0 ${r.category==='Exclude'?'opacity-50 italic':''}">
-                    <div class="text-xs font-bold text-[#474a4d]">${r.name}<div class="text-[9px] text-[#474a4d]/50 uppercase">${r.fullDate} ${r.category==='Exclude'?'[EXC]':''}</div></div>
+                    <div class="text-xs font-bold text-[#474a4d]">${r.name}<div class="text-[9px] text-[#474a4d]/50 uppercase">${r.fullDate} ${r.viaOcto?'[OCT]':''} ${r.category==='Exclude'?'[EXC]':''}</div></div>
                     <div class="font-mono font-bold text-sm">${r.valHKD.toFixed(1)}</div>
                 </div>`).join('');
             
